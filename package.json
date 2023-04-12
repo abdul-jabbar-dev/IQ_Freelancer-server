@@ -1,0 +1,28 @@
+{
+  "name": "iq_f",
+  "version": "1.0.0",
+  "description": "Development",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abdul-jabbar-dev/IQ_Freelancer-server.git"
+  },
+  "keywords": [
+    "IQF"
+  ],
+  "author": "Abdullah, Maruf, Munna",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

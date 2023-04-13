@@ -3,6 +3,7 @@ const express = require('express')
 const ServiceRoute = require('./Routes/service.route')
 const BlogRoute = require('./Routes/blog.route')
 const mongoose = require('mongoose')
+const UserRoute = require('./Routes/user.route')
 
 const PORT = process.env.PORT || 4000
 
@@ -12,8 +13,9 @@ app.use(express.json())
 mongoose.connect(process.env.DB_URL).then(
     (res) => {
         console.log('db is connetct')
-
+        
         app.use('/services', ServiceRoute)
+        app.use('/users', UserRoute)
         app.use('/blogs', BlogRoute)
 
     }

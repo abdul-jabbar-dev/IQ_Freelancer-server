@@ -12,17 +12,15 @@ const serviceSchema = new mongoose.Schema({
         required: [true, 'Price field required '],
         trim: true,
     },
-    images: {
-        type: [String],
-        required: [true, 'Images field required '],
-    },
+    media: Schema.Types.Mixed,
+
     description: {
         type: String,
         required: [true, 'Description field required '],
         maxlength: [200, 'Maximum length 200 ']
     },
     reviews: {
-        type: Schema.Types.ObjectId,
+        type: [Schema.Types.ObjectId],
         ref: 'reviews'
     },
     comments: {

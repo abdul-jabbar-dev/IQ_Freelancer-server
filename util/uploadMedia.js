@@ -1,5 +1,5 @@
 
-module.exports.uploadImage = (mediaObject) => {
+module.exports.uploadImage = (mediaObject) => { 
     if(mediaObject.length===0){
         return ''
     }

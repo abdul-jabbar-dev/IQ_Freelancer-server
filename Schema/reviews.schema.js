@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const { Schema } = mongoose;
 
 const reviewSchema = new mongoose.Schema({
+
     userId: {
         type: Schema.Types.ObjectId,
         required: [true, 'userId field required '],
@@ -21,7 +22,6 @@ const reviewSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'ratting field required '],
     }
-
 })
 
 

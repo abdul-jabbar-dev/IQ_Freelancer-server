@@ -1,6 +1,7 @@
 const multer = require("multer");
 const fs = require("fs");
 const urlPath = require('path')
+
 exports.upload = (folderName) => {
     return imageUpload = multer({
         storage: multer.diskStorage({

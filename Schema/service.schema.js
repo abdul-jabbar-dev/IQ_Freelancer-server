@@ -12,8 +12,9 @@ const serviceSchema = new mongoose.Schema({
         required: [true, 'Price field required '],
         trim: true,
     },
-    media: Schema.Types.Mixed,
-
+    images: {
+        type: [String] 
+    },
     description: {
         type: String,
         required: [true, 'Description field required '],
@@ -22,9 +23,6 @@ const serviceSchema = new mongoose.Schema({
     reviews: {
         type: [Schema.Types.ObjectId],
         ref: 'reviews'
-    },
-    comments: {
-        type: String
     }
 
 }, {

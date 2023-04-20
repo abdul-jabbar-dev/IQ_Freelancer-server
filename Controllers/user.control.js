@@ -71,14 +71,14 @@ module.exports.loginAccount = async (req, res) => {
 }
 module.exports.getMyInfo = async (req, res) => {
     try { 
-        var decoded = jwt.verify(req.jwt_token, process.env.JWT_SECRET);
-        res.status(200).send(decoded)
+        var decoded = req.userInfo
+        const result = await USER.findById(decoded._id).select({password:0})
+        res.status(200).send(result)
     } catch (err) {
         res.status(401).send({
             status:"token validation failed!",
             error:err,
-            massage:err?.massage
-
+            massage:err?.massage 
         })
     }
 }

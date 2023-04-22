@@ -6,7 +6,7 @@ const authentication = require('../util/middleware/authentication')
 const UserRoute = express.Router()
 
 UserRoute
-    .get('/', getAllUser)
+    .get('/',getAllUser)
     .get('/getme', tokenParsed, authentication('*'), getMyInfo)
     .post('/register', registerAAccount)
     .post('/login', loginAccount)

@@ -1,6 +1,7 @@
 const validator = require('validator');
 const mongoose = require("mongoose");
 const bcrept = require('bcrypt')
+const crypto = require('crypto')
 
 const addressSchema = new mongoose.Schema({
     street: String,
@@ -75,8 +76,10 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
     },
+    confirmationToken: String,
+    confirmationTokenExpire: Date,
     passwordResetToken: String,
-    passwordResetExpires: Date
+    passwordResetExpire: Date
 }, { timestamps: true })
 
 userSchema.pre('save', function (next) {
@@ -86,6 +89,15 @@ userSchema.pre('save', function (next) {
 })
 userSchema.methods.comparePassword = function (clientPassword, storedPasswordHash) {
     return bcrept.compareSync(clientPassword, storedPasswordHash)
+}
+
+userSchema.methods.genarateConfirmationToken = function () {
+    let token = crypto.randomBytes(32).toString('hex')
+    this.confirmationToken = token
+    let date = new Date()
+    date.setDate(date.getDate() + 1)
+    this.confirmationTokenExpire = date
+    return token
 }
 
 const USER = mongoose.model('users', userSchema)

@@ -3,35 +3,50 @@ const createToken = require("../util/createToken")
 const bcrept = require("bcrypt")
 const { uploadImage, deleteImage, getAllValueFromDocument } = require("../util/uploadMedia")
 const jwt = require("jsonwebtoken")
+const { sendMailByGmail } = require("../Service/email")
 
 // authentication point
 module.exports.registerAAccount = async (req, res) => {
-    const email = req.body.email
-    const password = req.body.password
-    const confirmPassword = req.body.confirmPassword
-    if (!email || !password) {
-        return res.json({
-            error: "fail",
-            massage: "email and password are required"
-        })
-    }
-    const ext = await USER.findOne({ email })
+    try {
+        const email = req.body.email
+        const password = req.body.password
+        const confirmPassword = req.body.confirmPassword
+        if (!email || !password) {
+            return res.json({
+                error: "fail",
+                massage: "email and password are required"
+            })
+        }
+        const ext = await USER.findOne({ email })
 
-    if (password !== confirmPassword) {
-        return res.json({
-            error: "fail",
-            massage: "Password didn't match"
-        })
-    } 
-    if (ext?.email) {
-        return res.json({
-            error: "fail",
-            massage: "User already exiest, try to login"
-        })
-    }
+        if (password !== confirmPassword) {
+            return res.json({
+                error: "fail",
+                massage: "Password didn't match"
+            })
+        }
+        if (ext?.email) {
+            return res.json({
+                error: "fail",
+                massage: "User already exiest, try to login"
+            })
+        }
 
-    const result = await USER.create(req.body)
-    res.send(result)
+        const result = await USER.create(req.body)
+        let token = result.genarateConfirmationToken()
+        await result.save({validateBeforeSave:false})
+        console.log(token)
+        let makeMailBody = {
+            email: email,
+            subject: "Thanks for craete user",
+            body: "congratulation for create a new account "+token
+        }
+        const mailRea = await sendMailByGmail(makeMailBody)
+        const sendMailId = mailRea.messageId
+        res.send(mailRea)
+    } catch (error) {
+        console.log(error)
+    }
 }
 module.exports.loginAccount = async (req, res) => {
     try {
@@ -70,15 +85,15 @@ module.exports.loginAccount = async (req, res) => {
     }
 }
 module.exports.getMyInfo = async (req, res) => {
-    try { 
+    try {
         var decoded = req.userInfo
-        const result = await USER.findById(decoded._id).select({password:0})
+        const result = await USER.findById(decoded._id).select({ password: 0 })
         res.status(200).send(result)
     } catch (err) {
         res.status(401).send({
-            status:"token validation failed!",
-            error:err,
-            massage:err?.massage 
+            status: "token validation failed!",
+            error: err,
+            massage: err?.massage
         })
     }
 }

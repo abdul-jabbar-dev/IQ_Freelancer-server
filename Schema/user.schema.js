@@ -76,19 +76,21 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
     },
+    lastPasswordChange: Date,
     confirmationToken: String,
     confirmationTokenExpire: Date,
     passwordResetToken: String,
     passwordResetExpire: Date
 }, { timestamps: true })
 
-userSchema.pre('save', function (next) {
-    this.password = bcrept.hashSync(this.password, parseInt(process.env.SALT))
-    next()
+userSchema.methods.passwordHashed = function (newPassword = this.password) {
+    this.password = bcrept.hashSync(newPassword, parseInt(process.env.SALT))
+    return this.password
+}
 
-})
-userSchema.methods.comparePassword = function (clientPassword, storedPasswordHash) {
-    return bcrept.compareSync(clientPassword, storedPasswordHash)
+userSchema.methods.comparePassword = function (textAsText, storedPasswordAsHash) {
+
+    return bcrept.compareSync(textAsText, storedPasswordAsHash)
 }
 
 userSchema.methods.genarateConfirmationToken = function () {

@@ -2,7 +2,6 @@ const USER = require("../Schema/user.schema")
 const createToken = require("../util/createToken")
 const bcrept = require("bcrypt")
 const { uploadImage, deleteImage, getAllValueFromDocument } = require("../util/uploadMedia")
-const jwt = require("jsonwebtoken")
 const { sendMailByGmail } = require("../Service/email")
 
 // authentication point
@@ -33,13 +32,13 @@ module.exports.registerAAccount = async (req, res) => {
         }
 
         const result = await USER.create(req.body)
+        result.passwordHashed()
         let token = result.genarateConfirmationToken()
-        await result.save({validateBeforeSave:false})
-        console.log(token)
+        await result.save({ validateBeforeSave: false })
         let makeMailBody = {
             email: email,
             subject: "Thanks for craete user",
-            body: "congratulation for create a new account "+token
+            body: `congratulation for create a new account  varify your account ${req.protocol}://${req.get('host')}${req.originalUrl}/confirm_account/${token}`
         }
         const mailRea = await sendMailByGmail(makeMailBody)
         const sendMailId = mailRea.messageId
@@ -94,6 +93,70 @@ module.exports.getMyInfo = async (req, res) => {
             status: "token validation failed!",
             error: err,
             massage: err?.massage
+        })
+    }
+}
+module.exports.confirmAccount = async (req, res) => {
+    try {
+        var token = req.params.token
+        const result = await USER.findOne({ confirmationToken: token })
+        if (!result) {
+            return res.json({
+                status: "Auth token missing",
+                massage: "Authentication token missing"
+            })
+        }
+        if (result.confirmationTokenExpire < new Date()) {
+            return res.json({ massage: "Confirmation token expier try again!" })
+        } else {
+            result.status = "Active"
+            result.confirmationToken = undefined
+            result.confirmationTokenExpire = undefined
+            result.save({ validateBeforeSave: false })
+            return res.json({ massage: "Account confirmed successfuly" })
+        }
+    } catch (err) {
+        console.log(err)
+        res.status(401).send({
+            status: "token validation failed!",
+            error: err,
+            massage: err
+        })
+    }
+}
+module.exports.resetPassword = async (req, res) => {
+    try {
+        const old_pass = req.body.oldPassword
+        const new_pass = req.body.newPassword
+        const userId = req.params.userId
+        if (!old_pass || !new_pass) {
+            return res.status(401).send({
+                status: "reset failed",
+                error: (old_pass ? "New" : "Old") + " Password missing"
+            })
+        }
+        const user = await USER.findById(userId)
+        let matchPassword = bcrept.compareSync(old_pass, user.password)
+        if (matchPassword) {
+            user.passwordHashed(new_pass)
+            user.lastPasswordChange = new Date()
+            user.save({ validateBeforeSave: false })
+            return res.send({
+                status: "new password saved successfully"
+            })
+        } else {
+            return res.send({
+                status: "password dosen't save"
+            })
+        }
+
+
+    } catch (err) {
+        console.log(err)
+        res.status(401).send({
+            status: "reset failed",
+            error: err,
+            massage: err
         })
     }
 }

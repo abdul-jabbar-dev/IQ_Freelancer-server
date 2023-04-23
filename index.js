@@ -4,18 +4,19 @@ const express = require('express')
 const ServiceRoute = require('./Routes/service.route')
 const BlogRoute = require('./Routes/blog.route')
 const UserRoute = require('./Routes/user.route')
-const bodyParser = require('body-parser') 
+const bodyParser = require('body-parser')
 const PORT = process.env.PORT || 4000
+const path = require('path')
 
 const app = express()
 app.use(express.json())
 app.use(bodyParser.text({ type: '/' }));
 
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')))
 mongoose.connect(process.env.DB_URL).then(
     (res) => {
         console.log('db is connetct')
-        
-        app.use('/services', ServiceRoute) 
+        app.use('/services', ServiceRoute)
         app.use('/users', UserRoute)
         app.use('/blogs', BlogRoute)
 
@@ -24,11 +25,7 @@ mongoose.connect(process.env.DB_URL).then(
 
 app.get('/', (req, res) => {
     res.send('Home')
-})
-
-
-
-
+}) 
 app.listen(PORT, (error) => {
     console.log('server listening')
 })

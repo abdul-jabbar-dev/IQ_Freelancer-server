@@ -5,7 +5,7 @@ module.exports = async (req, res, next) => {
     if (!bearerRoken) {
         return res.status(401).json(
             {
-                status: "Authorization faild",
+                status: "Authorization failed",
                 massage: "Login Required! "
             }
         )
@@ -15,8 +15,8 @@ module.exports = async (req, res, next) => {
         req.userInfo = jwt.verify(token, process.env.JWT_SECRET);
         next()
     } catch (error) {
-       return res.send({error,tips:"Try valid token"})
+        return res.send({ error, tips: "Try valid token" })
     }
 
-   
+
 }

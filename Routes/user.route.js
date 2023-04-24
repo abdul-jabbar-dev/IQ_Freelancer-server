@@ -4,11 +4,13 @@ const {
     createAUser,
     deleteAUser,
     updateUser,
-    resetPassword,
+    changePassword,
     getAUser,
     registerAAccount,
     loginAccount,
     getMyInfo,
+    resetPassword,
+    confirmResetPassword,
     confirmAccount
 } = require('../Controllers/user.control')
 const { upload } = require('../Config/multer')
@@ -23,7 +25,9 @@ UserRoute
     .post('/register', registerAAccount)
     .post('/login', loginAccount)
 
-    .post('/reset_password/:userId', resetPassword)
+    .post('/change_password/:userId', changePassword)
+    .post('/reset_password', resetPassword)
+    .post('/reset_password/confirm/:email', confirmResetPassword)
 
     .post('/', upload('user').any(), createAUser)
     .get('/:userId', getAUser)

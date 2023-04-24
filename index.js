@@ -7,6 +7,7 @@ const UserRoute = require('./Routes/user.route')
 const bodyParser = require('body-parser')
 const PORT = process.env.PORT || 4000
 const path = require('path')
+var crypto = require('crypto');
 
 const app = express()
 app.use(express.json())
@@ -24,7 +25,12 @@ mongoose.connect(process.env.DB_URL).then(
 ).catch(err => console.dir(err))
 
 app.get('/', (req, res) => {
-    res.send('Home')
+    crypto.randomBytes(2, function (err, buffer) {
+        console.log(parseInt(buffer.toString('hex'), 16))
+        res.send('helo');
+    });
+
+   
 }) 
 app.listen(PORT, (error) => {
     console.log('server listening')

@@ -1,7 +1,11 @@
 const USER = require("../Schema/user.schema")
 const createToken = require("../util/createToken")
 const bcrept = require("bcrypt")
-const { uploadImage, deleteImage, getAllValueFromDocument } = require("../util/uploadMedia")
+const {
+    uploadImage,
+    deleteImage,
+    getAllValueFromDocument
+} = require("../util/uploadMedia")
 const { sendMailByGmail } = require("../Service/email")
 
 // authentication point
@@ -124,14 +128,14 @@ module.exports.confirmAccount = async (req, res) => {
         })
     }
 }
-module.exports.resetPassword = async (req, res) => {
+module.exports.changePassword = async (req, res) => {
     try {
         const old_pass = req.body.oldPassword
         const new_pass = req.body.newPassword
         const userId = req.params.userId
         if (!old_pass || !new_pass) {
             return res.status(401).send({
-                status: "reset failed",
+                status: "change password failed",
                 error: (old_pass ? "New" : "Old") + " Password missing"
             })
         }
@@ -154,14 +158,94 @@ module.exports.resetPassword = async (req, res) => {
     } catch (err) {
         console.log(err)
         res.status(401).send({
-            status: "reset failed",
+            status: "change password failed",
             error: err,
             massage: err
         })
     }
 }
+module.exports.resetPassword = async (req, res) => {
+    try {
+        const { email } = req.body
+        if (!email) {
+            return req.send({
+                status: "Email required"
+            })
+        }
+        const user = await USER.findOne({ email })
+        let token = user.genaratePasswordSecretCode()
+        user.save({ validateBeforeSave: false })
+        let makeMailBody = {
+            email: email,
+            subject: "Thanks for reset password",
+            body: `
+            Need to reset your password?
+            Use your secret code!
 
+            ${token}
 
+            Click on the button below and enter the secret code above.
+            ${req.protocol}://${req.get('host')}${req.originalUrl}/confirm/${token}
+
+            If you did not forget your password, you can ignore this email.`
+        }
+        const mailRea = await sendMailByGmail(makeMailBody)
+        const sendMailId = mailRea.messageId
+        if (sendMailId) {
+            return res.json({
+                satus: "Secret code send successfully."
+            })
+        } else {
+            return res.json({
+                satus: "Secret code send unsuccessfully. try again"
+            })
+        }
+
+    } catch (error) {
+        return res.json({
+            satus: "Failed",
+            error
+        })
+    }
+}
+module.exports.confirmResetPassword = async (req, res) => {
+    try {
+        const { email } = req?.params
+        const { secret_code } = req?.query
+        const { new_pass } = req?.body
+        console.log(email, secret_code, new_pass)
+        if (!email || !secret_code) {
+            return res.json({
+                status: "Failed confirmation password",
+                massage: !secret_code ? "Secret code" : "Email" + " must be nedded"
+            })
+        }
+
+        const result = await USER.findOne({ email })
+        if (result.passwordSecretCodeExpire < new Date()) {
+            return res.json({
+                status: "Failed action",
+                massage: "Secret code expired"
+            })
+        }
+        if (parseInt(result.passwordSecretCode) === parseInt(secret_code)) {
+            result.passwordHashed(new_pass)
+            result.passwordSecretCode = undefined
+            result.passwordSecretCodeExpire = undefined
+            result.lastPasswordChange = new Date()
+            result.save({ validateBeforeSave: false })
+
+        } else {
+            return res.json({
+                status: "Failed reset Password",
+                massage: "Secret code not match try again"
+            })
+        }
+
+    } catch (error) {
+
+    }
+}
 //user curd point
 module.exports.getAllUser = async (req, res) => {
     try {

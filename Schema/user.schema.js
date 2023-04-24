@@ -73,14 +73,12 @@ const userSchema = new mongoose.Schema({
     socialLinks: {
         type: socialLinksSchema
     },
-    password: {
-        type: String,
-    },
+    password: String ,
     lastPasswordChange: Date,
     confirmationToken: String,
     confirmationTokenExpire: Date,
-    passwordResetToken: String,
-    passwordResetExpire: Date
+    passwordSecretCode: String,
+    passwordSecretCodeExpire: Date
 }, { timestamps: true })
 
 userSchema.methods.passwordHashed = function (newPassword = this.password) {
@@ -94,12 +92,25 @@ userSchema.methods.comparePassword = function (textAsText, storedPasswordAsHash)
 }
 
 userSchema.methods.genarateConfirmationToken = function () {
+
     let token = crypto.randomBytes(32).toString('hex')
     this.confirmationToken = token
     let date = new Date()
     date.setDate(date.getDate() + 1)
     this.confirmationTokenExpire = date
     return token
+    
+}
+
+userSchema.methods.genaratePasswordSecretCode = function () {
+
+    let secretCode = Math.floor((Math.random() * 1000000) + 1);
+    this.passwordSecretCode = secretCode
+    let date = new Date()
+    date.setDate(date.getDate() + 1)
+    this.passwordSecretCodeExpire = date
+    return secretCode
+
 }
 
 const USER = mongoose.model('users', userSchema)
